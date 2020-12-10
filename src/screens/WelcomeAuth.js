@@ -1,10 +1,11 @@
-import React, {useState} from 'react';
+import React, {useEffect} from 'react';
 import {
   ImageBackground,
   View,
   StyleSheet,
   TouchableOpacity,
   Text,
+  StatusBar
 } from 'react-native';
 import {Thumbnail} from 'native-base';
 import Icon from 'react-native-vector-icons/FontAwesome';
@@ -12,8 +13,12 @@ import background from '../assets/background.jpg';
 import background2 from '../assets/background2.jpg';
 import IsLoading from './SplashLoading';
 
-const SplashScreen = ({navigation}) => {
-
+const WelcomeAuth = ({navigation}) => {
+useEffect(() => {
+    setTimeout(() => {
+        StatusBar.setBackgroundColor('#2f2f2f');
+      }, 100);
+}, [])
   return (
     <>
       <View style={style.container2}>
@@ -23,16 +28,12 @@ const SplashScreen = ({navigation}) => {
             <Text style={style.title2}> NowApps</Text>
           </Text>
           <Thumbnail style={style.thumbnail} source={background2} />
-          <View style={style.description}>
-            <Text style={{color: 'gray'}}>
-              Read our
-              <Text style={{color: 'white'}}> Privacy Policy</Text>. Tap "Get
-              Started Now" to accept the{' '}
-              <Text style={{color: 'white'}}>Term Of Service</Text>
-            </Text>
-          </View>
-          <TouchableOpacity style={style.button} onPress={() => navigation.navigate("WelcomeAuth")}>
-            <Text style={style.btnText}>Get Started Now</Text>
+         
+          <TouchableOpacity style={style.button} onPress={() => navigation.navigate("Login")}>
+            <Text style={style.btnText}>Login</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={style.button} onPress={() => navigation.navigate("Register")}>
+            <Text style={style.btnText}>Register</Text>
           </TouchableOpacity>
           <Text style={style.createBy}>
             Create by Rezha Maulana Jaya
@@ -43,7 +44,7 @@ const SplashScreen = ({navigation}) => {
   );
 };
 
-export default SplashScreen;
+export default WelcomeAuth;
 
 const style = StyleSheet.create({
   description: {

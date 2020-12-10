@@ -6,7 +6,7 @@ import {
   TouchableOpacity,
   Text,
 } from 'react-native';
-import {Spinner} from 'native-base'
+import {Spinner} from 'native-base';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import background from '../assets/background.jpg';
 const SplashScreenLoading = ({navigation}) => {
@@ -26,12 +26,11 @@ const SplashScreenLoading = ({navigation}) => {
             style={style.reverse}
           />
           <Text style={style.text}>NowApp</Text>
-          
         </ImageBackground>
       </View>
       <View style={style.container2}>
         <ImageBackground source={background} style={style.image}>
-        <Spinner />
+          <Spinner />
           <Text style={{color: 'gray', marginTop: 10}}>
             Create by Rezha Maulana Jaya
           </Text>
@@ -60,15 +59,15 @@ const style = StyleSheet.create({
   },
   text: {
     color: 'white',
-    fontWeight:'bold',
-    fontSize:20
+    fontWeight: 'bold',
+    fontSize: 20,
   },
   reverse: {
     transform: [{rotate: '135deg'}],
   },
   button: {
-    alignItems: "center",
-    backgroundColor: "transparent",
+    alignItems: 'center',
+    backgroundColor: 'transparent',
     padding: 10,
   },
 });

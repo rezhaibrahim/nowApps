@@ -1,155 +1,228 @@
 import React, {Component} from 'react';
+import Icon from 'react-native-vector-icons/FontAwesome';
+
+import {StatusBar, View,StyleSheet,Text,TouchableOpacity,TextInput,ImageBackground,Alert} from 'react-native';
+import background from '../assets/background.jpg';
 import {connect} from 'react-redux';
-import IconVector from 'react-native-vector-icons/FontAwesome';
-import {Alert, Text, View, StyleSheet} from 'react-native';
-import {
-  Body,
-  Button,
-  Card,
-  CardItem,
-  Container,
-  Content,
-  Form,
-  H1,
-  Input,
-  Item,
-  Label,
-} from 'native-base';
+import registerAction from '../redux/actions/auth';
+ class Register extends Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+       phone: '',
+    };
+ }
 
-import {TouchableOpacity} from 'react-native-gesture-handler';
+ register = (e) => {
+  e.preventDefault();
+  const {phone} = this.state;
+  const data = {phone};
+  console.log(phone,data);
+  this.props.doRegister(data);
+}
+showAlert = () => {
+  const {alertMsg} = this.props.auth;
+  if (alertMsg !== this.state.alertMsg) {
+    this.setState({alertMsg});
+    Alert.alert(alertMsg);
+  }
+};
 
-class Signup extends Component {
+componentDidUpdate() {
+  this.showAlert();
+}
+  componentDidMount() {
+    setTimeout(() => {
+      StatusBar.setBackgroundColor('#2f2f2f');
+    }, 100);
+  }
   render() {
+    const {navigation} = this.props;
     return (
-      <Container>
-        <Content>
-          <View style={style.parent}>
-            <View style={style.title}>
-              <IconVector
-                style={{paddingBottom: 10}}
-                name="chevron-left"
-                onPress={() => this.props.navigation.navigate('WelcomeAuth')}
-                size={25}
-                color="black"
-              />
-              <Text style={style.titleText}>Signup</Text>
+      <ImageBackground source={background} style={styles.image}>
+
+      <View style={styles.wrapper}>
+         <View style={styles.viewHeader}>
+         <TouchableOpacity style={styles.icon}>
+               <Icon name="arrow-left" size={20} color="grey" onPress={() => navigation.navigate('WelcomeAuth')} />
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.icon2}>
+               <Icon name="ellipsis-v" size={20} color="grey" />
+            </TouchableOpacity>
+         </View>
+
+        
+
+         <View style={styles.inputGrup}>
+            <TouchableOpacity style={styles.selectCountry}>
+               <Text style={styles.txtCountry}>
+                  Indonesia
+               </Text>
+               <Icon name="sort-down" size={20} color="#004d40" style={styles.iconCountry} />
+            </TouchableOpacity>
+         </View>
+
+         <View style={styles.inputGrup}>
+            <View style={styles.viewInitialPhone}>
+               <Text style={styles.txtPlush}>+</Text>
+               <TextInput style={styles.txtInitialPhone} value="62" maxLength={3}  />
             </View>
-            <Form>
-              <Card style={style.inputCard}>
-                <CardItem>
-                  <Body>
-                    <Item style={style.inputWrapper} floatingLabel>
-                      <Label style={style.label}>Name</Label>
-                      <Input style={style.input} />
-                    </Item>
-                  </Body>
-                </CardItem>
-              </Card>
-              <Card style={style.inputCard}>
-                <CardItem>
-                  <Body>
-                    <Item style={style.inputWrapper} floatingLabel>
-                      <Label style={style.label}>Email</Label>
-                      <Input style={style.input} />
-                    </Item>
-                  </Body>
-                </CardItem>
-              </Card>
-              <Card style={style.inputCard}>
-                <CardItem>
-                  <Body>
-                    <Item style={style.inputWrapper} floatingLabel>
-                      <Label style={style.label}>Password</Label>
-                      <Input style={style.input} secureTextEntry />
-                    </Item>
-                  </Body>
-                </CardItem>
-              </Card>
-              <TouchableOpacity
-                onPress={() => this.props.navigation.navigate('Login')}
-                style={style.linkWrapper}>
-                <Text style={style.textLink}>Already have an account?</Text>
-                <IconVector
-                  style={style.iconLink}
-                  name="long-arrow-right"
-                  size={19}
-                />
-              </TouchableOpacity>
-              <View style={style.btnWrapper}>
-                <Button onPress={this.signup} style={style.btn}>
-                  <Text style={style.btnText}>sign up</Text>
-                </Button>
-              </View>
-            </Form>
-          </View>
-        </Content>
-      </Container>
+            <TextInput style={styles.inputPhone} onChangeText={phone => this.setState({phone})} placeholder="Phone number" />
+         </View>
+
+         <View style={styles.viewInfo}>
+            <Text style={styles.txtInfo}>
+            Enter the unregistered telephone number
+            </Text>
+         </View>
+
+      </View>
+
+      {/* footer */}
+      <View style={styles.footer}>
+         <TouchableOpacity style={styles.btnFooter} onPress={this.register}>
+            <Text style={styles.txtBtn}>Register</Text>
+         </TouchableOpacity>
+      </View>
+  </ImageBackground>
     );
   }
 }
+const mapStateToProps = state => ({
+  auth: state.auth,
+});
 
-const style = StyleSheet.create({
-  parent: {
+const mapDispatchToProps = {
+  doRegister: registerAction.register
+};  
+
+const styles = StyleSheet.create({
+  image: {
     flex: 1,
-    marginHorizontal: 25,
+    resizeMode: 'cover',
   },
-  title: {
-    marginTop: 25,
-    marginBottom: 60,
+  wrapper: {
+     flex: 1,
   },
-  titleText: {
-    fontWeight: 'bold',
-    fontSize: 50,
-    marginTop: 34,
+  viewHeader: {
+     flexDirection: 'row',
+     alignItems: 'center',
+     justifyContent: 'center',
+     height: 50,
   },
-  inputCard: {
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderRadius: 4,
+  txtHeader: {
+     flex: 12,
+     justifyContent: 'center',
+     textAlign: 'center',
+     color: 'white',
+     fontSize: 18,
+     fontWeight: '900',
   },
-  inputWrapper: {
-    alignItems: 'center',
-    justifyContent: 'center',
+  icon: {
+    flex:1,
+    flexDirection:'row',
+    alignItems:'flex-start',
+    justifyContent:'flex-start',
+    margin:30
   },
-  label: {
-    justifyContent: 'center',
-    alignItems: 'center',
-    fontSize: 16,
+  icon2: {
+    flex:1,
+    flexDirection:'row',
+    alignItems:'flex-end',
+    justifyContent:'flex-end',
+    margin:30
   },
-  input: {
-    color: 'black',
-    fontSize: 19,
+  viewTxtDesc: {
+     height: 60,
+     justifyContent: 'center',
   },
-  linkWrapper: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'flex-end',
-    marginVertical: 8,
+  txtDesc: {
+     fontSize: 15,
+     lineHeight: 25,
+     textAlign: 'center',
   },
-  textLink: {
-    fontSize: 20,
+ 
+  inputGrup: {
+     // borderWidth: 1,
+     height: 50,
+     width: 300,
+     alignSelf: 'center',
+     marginVertical: 10,
+     flexDirection: 'row',
   },
-  iconLink: {
-    color: '#DB3022',
-    marginLeft: 5,
+  selectCountry: {
+     flexDirection: 'row',
+     borderBottomColor: '#004d40',
+     borderBottomWidth: 1,
+     height: 30,
+     width: 300,
+     alignItems: 'center',
+     alignSelf: 'center',
+     justifyContent: 'center',
   },
-  btnWrapper: {
-    flex: 1,
-    marginTop: 15,
+  txtCountry: {
+     flex: 10,
+     textAlign: 'center',
+     fontSize: 17,
+     color:'gray'
   },
-  btn: {
-    width: '100%',
-    height: 50,
-    borderRadius: 25,
-    backgroundColor: '#DB3022',
-    alignItems: 'center',
-    justifyContent: 'center',
+  iconCountry: {
+     flex: 1,
   },
-  btnText: {
-    fontSize: 16,
-    textTransform: 'uppercase',
-    color: 'white',
+  viewInitialPhone: {
+     flexDirection: 'row',
+     borderBottomWidth: 1,
+     borderBottomColor: '#004d40',
+     width: 60,
+     alignItems: 'center',
+     justifyContent: 'space-around',
+     color:'gray' 
+  },
+  txtPlush: {
+     color: 'grey',
+     fontSize: 20,
+  },
+  txtInitialPhone: {
+     fontSize: 20,
+     color: 'grey',
+  },
+  inputPhone: {
+     marginLeft: 10,
+     borderBottomWidth: 2,
+     borderBottomColor: '#004d40',
+     flex: 1,
+     fontSize: 19,
+     color:'gray'
+  },
+  viewInfo: {
+     marginVertical: 10,
+     alignItems: 'center',
+  },
+  txtInfo: {
+     color: 'grey',
+     fontSize: 15,
+     fontWeight: '900',
+  },
+
+  // footer
+  footer: {
+     alignItems: 'center',
+     height: 50,
+  },
+  btnFooter: {
+     backgroundColor: '#004d40',
+     width: 100,
+     height: 40,
+     borderRadius:30,
+     alignItems: 'center',
+     justifyContent: 'center',
+  },
+  txtBtn: {
+     color: 'white',
+     fontSize: 15,
   },
 });
 
-export default Signup;
+
+
+export default connect(mapStateToProps, mapDispatchToProps)(Register);
