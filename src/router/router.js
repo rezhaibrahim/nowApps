@@ -115,15 +115,15 @@ const IconHeaderRight = () => {
 };
 
 const IconHeaderLeft = ({header}) => {
-  // console.log("mainHeader",header);
-  const {id}= header.params
+  console.log("mainHeader",header);
+  const {userId}= header.params
   const dispatch = useDispatch()
   const {token} = useSelector(state => state.auth)
   const profileFriend = useSelector(state => state.user.profileFriend)
   // console.log('mainlagi',profileFriend);
   const { name,picture,phone }= profileFriend
   React.useEffect(()=>{
-    dispatch(getUserAction.profileFriend(token,id))
+    dispatch(getUserAction.profileFriend(token,userId))
   },[])
 
   React.useEffect(()=>{

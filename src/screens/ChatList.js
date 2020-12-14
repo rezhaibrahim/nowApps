@@ -26,27 +26,44 @@ const ChatListScreen = ({navigation}) => {
   const dispatch = useDispatch()
   const {token} = useSelector(state => state.auth)
   const chatList = useSelector(state => state.user.chatList) 
-  console.log(chatList);
+   const pageInfo = useSelector(state => state.user.chatListPageInfo)
+   const [isLoading, setIsLoading] = useState(false);
+  console.log("pagination",pageInfo);
 
   useEffect(() => {
     dispatch(userGetAction.chatlist(token))
+    dispatch(userGetAction.profile(token));
   }, [])
   
   useEffect(() => {
+    
     // console.log(chatList);
   }, [chatList])
-
+  
+  const refresh =()=> {
+    
+    
+    setIsLoading(true);
+    dispatch(userGetAction.chatlist(token));
+    setIsLoading(false);
+  }
+  const nextPage = () =>{
+    if (pageInfo.pages > pageInfo.currentPage) {
+      dispatch(userGetAction.chatlist(token,pageInfo.currentPage + 1))
+    }
+  }
   return (
       <ImageBackground source={background} style={style.background}>
-        
-
         <FlatList
           data={chatList}
+          onRefresh={refresh}
+          refreshing={isLoading}
+          onEndReached={nextPage}
+          onEndReachedThreshold={0.5}
           renderItem={({item}) => 
             <RenderItem item={item} navigation={navigation} />
           }
         />
-        
         <Button rounded style={style.btn}>
           <Icon name="chat" size={35} color="white" />
         </Button>

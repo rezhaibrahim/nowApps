@@ -2,6 +2,7 @@ const initialState = {
   chatList: {},
   chatRoom: [],
   chatRoomPageInfo: {},
+  chatListPageInfo:{},
   profileFriend:{},
   profile:{},
   isLoading: false,
@@ -31,6 +32,7 @@ export default (state = initialState, action) => {
         isLoading: false,
         isError: false,
         chatList: action.payload.data.results,
+        chatListPageInfo: action.payload.data.pageInfo,
       };
     }
     case 'CHAT_ROOM_PENDING': {
@@ -86,7 +88,7 @@ export default (state = initialState, action) => {
         ...state,
         isLoading: true,
         isError: false,
-        alertMsg: 'Loading get profile friend',
+        alertMsg: 'Loading get profile ',
       };
     }
     case 'PROFILE_REJECTED': {

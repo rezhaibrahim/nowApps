@@ -32,14 +32,15 @@ const RenderChat = ({chat}) => {
   console.log(chat);
   return (
     <View>
-      <View style={styles.thereChat}>
+      
+      {id === chat.sender ? ( <View style={styles.myChat}>
         <Text style={{color: 'white'}}>{chat.messages}</Text>
         <Text style={styles.date}>3:10 PM</Text>
-      </View>
-      <View style={styles.myChat}>
-        <Text style={{color: 'white'}}>{chat.myChat}</Text>
+      </View>):(<View style={styles.thereChat}>
+        <Text style={{color: 'white'}}>{chat.messages}</Text>
         <Text style={styles.date}>3:10 PM</Text>
-      </View>
+      </View>)}
+     
     </View>
   );
 };
@@ -48,16 +49,17 @@ const ChatRoom = ({route}) => {
   const dispatch = useDispatch();
   const {token} = useSelector((state)=> state.auth)
   const chatRoom = useSelector((state)=> state.user.chatRoom)
-
-  const {id} = route.params
-
+ const chat = chatRoom.reverse()
+  const {userId } = route.params
+  const [textInput, setTextInput] = React.useState('');
+   console.log(textInput);
 
   React.useEffect(()=>{
    
-  }, [chatRoom])
+  }, [chat])
 
   React.useEffect(()=>{
-    dispatch(userGetAction.chatRoom(token,id))
+    dispatch(userGetAction.chatRoom(token,userId))
   }, [])
 
 
@@ -66,21 +68,21 @@ const ChatRoom = ({route}) => {
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
         <ImageBackground source={background} style={styles.image}>
           <FlatList
-          data={chatRoom}
+          data={chat}
             contentContainerStyle={styles.containerStyle}
             renderItem={({item}) => <RenderChat chat={item} />}
             keyExtractor={(item) => item.id}
           />
           <View style={styles.bottom}>
-          {/* <Item style={styles.itemInput}>
+          <Item style={styles.itemInput}>
             <Icon name="emoticon-outline" size={25} color="#b4b6b6" />
             <Input
               multiline
               placeholder="Type a message"
               style={styles.input}
-              onChangeText={isTyping}
+              onChangeText={(e) => setTextInput(e)}
             />
-            {message.length > 0 && (
+            {textInput.length > 0 && (
               <Icon
                 style={styles.iconClip}
                 name="paperclip"
@@ -88,7 +90,7 @@ const ChatRoom = ({route}) => {
                 color="#b4b6b6"
               />
             )}
-            {!message.length && (
+            {!textInput.length && (
               <View style={styles.rightInput}>
                 <Icon
                   style={styles.iconClip}
@@ -106,13 +108,13 @@ const ChatRoom = ({route}) => {
             )}
           </Item>
           <Button rounded style={styles.btnMic}>
-            {message.length > 0 && (
+            {textInput.length > 0 && (
               <IconFontAwesome name="send" size={25} color="#ffffff" />
             )}
-            {!message.length && (
+            {!textInput.length && (
               <Icon name="microphone" size={25} color="#ffffff" />
             )}
-          </Button> */}
+          </Button>
         </View>
       </ImageBackground>
     </TouchableWithoutFeedback>
