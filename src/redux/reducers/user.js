@@ -1,7 +1,9 @@
 const initialState = {
-  data: {},
+  chatList: {},
   chatRoom: [],
   chatRoomPageInfo: {},
+  profileFriend:{},
+  profile:{},
   isLoading: false,
   isError: false,
   alertMsg: '',
@@ -28,7 +30,7 @@ export default (state = initialState, action) => {
         ...state,
         isLoading: false,
         isError: false,
-        data: action.payload.data.results,
+        chatList: action.payload.data.results,
       };
     }
     case 'CHAT_ROOM_PENDING': {
@@ -47,12 +49,60 @@ export default (state = initialState, action) => {
         alertMsg: action.payload.message,
       };
     }
-    case 'Chat_ROOM_FULFILLED': {
+    case 'CHAT_ROOM_FULFILLED': {
       return {
         ...state,
         isLoading: false,
         isError: false,
         chatRoom: action.payload.data.results,
+      };
+    }
+    case 'PROFILE_FRIEND_PENDING': {
+      return {
+        ...state,
+        isLoading: true,
+        isError: false,
+        alertMsg: 'Loading get profile friend',
+      };
+    }
+    case 'PROFILE_FRIEND_REJECTED': {
+      return {
+        ...state,
+        isLoading: false,
+        isError: true,
+        alertMsg: action.payload.message,
+      };
+    }
+    case 'PROFILE_FRIEND_FULFILLED': {
+      return {
+        ...state,
+        isLoading: false,
+        isError: false,
+        profileFriend: action.payload.data.results,
+      };
+    }
+    case 'PROFILE_PENDING': {
+      return {
+        ...state,
+        isLoading: true,
+        isError: false,
+        alertMsg: 'Loading get profile friend',
+      };
+    }
+    case 'PROFILE_REJECTED': {
+      return {
+        ...state,
+        isLoading: false,
+        isError: true,
+        alertMsg: action.payload.message,
+      };
+    }
+    case 'PROFILE_FULFILLED': {
+      return {
+        ...state,
+        isLoading: false,
+        isError: false,
+        profile: action.payload.data.results,
       };
     }
     default: {

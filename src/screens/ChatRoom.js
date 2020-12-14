@@ -11,17 +11,29 @@ import {
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import IconFontAwesome from 'react-native-vector-icons/FontAwesome';
 import background from '../assets/background.jpg';
-
+import {useSelector, useDispatch} from 'react-redux';
+import {useNavigation} from '@react-navigation/native';
 import userGetAction from '../redux/actions/user';
-import {connect} from 'react-redux';
-
-
+// import BubbleChat from '../components/BubbleChat';
+// import {connect} from 'react-redux';
 
 const RenderChat = ({chat}) => {
+  const dispatch = useDispatch();
+  const {token} = useSelector((state)=> state.auth)
+  const profile = useSelector((state)=> state.user.profile)
+  
+  const {id} = profile
+  React.useEffect(()=>{
+
+  },[profile])
+  React.useEffect(()=>{
+    dispatch(userGetAction.profile(token))
+  }, [])
+  console.log(chat);
   return (
     <View>
       <View style={styles.thereChat}>
-        <Text style={{color: 'white'}}>{chat.theirChat}</Text>
+        <Text style={{color: 'white'}}>{chat.messages}</Text>
         <Text style={styles.date}>3:10 PM</Text>
       </View>
       <View style={styles.myChat}>
@@ -32,30 +44,35 @@ const RenderChat = ({chat}) => {
   );
 };
 
-class ChatRoom extends React.Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      token: this.props.auth.token,
-     
-    };
-  }
-  componentDidMount() {
-    this.props.getChatRoom(this.state.token,);
-    console.log('cek id',this.props);
-  }
-  render() {
-    console.log('cek', this.props.user.data);
-    return (
+const ChatRoom = ({route}) => {
+  const dispatch = useDispatch();
+  const {token} = useSelector((state)=> state.auth)
+  const chatRoom = useSelector((state)=> state.user.chatRoom)
+
+  const {id} = route.params
+
+
+  React.useEffect(()=>{
+   
+  }, [chatRoom])
+
+  React.useEffect(()=>{
+    dispatch(userGetAction.chatRoom(token,id))
+  }, [])
+
+
+  
+  return (
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
         <ImageBackground source={background} style={styles.image}>
           <FlatList
+          data={chatRoom}
             contentContainerStyle={styles.containerStyle}
             renderItem={({item}) => <RenderChat chat={item} />}
             keyExtractor={(item) => item.id}
           />
           <View style={styles.bottom}>
-            {/* <Item style={styles.itemInput}>
+          {/* <Item style={styles.itemInput}>
             <Icon name="emoticon-outline" size={25} color="#b4b6b6" />
             <Input
               multiline
@@ -96,24 +113,13 @@ class ChatRoom extends React.Component {
               <Icon name="microphone" size={25} color="#ffffff" />
             )}
           </Button> */}
-          </View>
-        </ImageBackground>
-      </TouchableWithoutFeedback>
-    );
-
-}
+        </View>
+      </ImageBackground>
+    </TouchableWithoutFeedback>
+  );
 };
 
-const mapStateToProps = (state) => ({
-  auth: state.auth,
-  user: state.user,
-});
-
-const mapDispatchToProps = {
-  getChatRoom: userGetAction.chatRoom,
-};
-
-export default connect(mapStateToProps, mapDispatchToProps)(ChatRoom);
+export default ChatRoom;
 
 const styles = StyleSheet.create({
   parent: {

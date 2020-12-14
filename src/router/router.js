@@ -5,9 +5,11 @@ import {TouchableOpacity, Image, View, Text} from 'react-native';
 import {createMaterialTopTabNavigator} from '@react-navigation/material-top-tabs';
 import Icon from 'react-native-vector-icons/FontAwesome5';
 import {useNavigation} from '@react-navigation/native';
-
+import {useDispatch,useSelector} from 'react-redux'
 import {connect} from 'react-redux';
-
+import getUserAction from '../redux/actions/user'
+import {API_URL} from '@env';
+import profile from '../assets/profile.png'
 import {
   Splash,
   Login,
@@ -112,8 +114,22 @@ const IconHeaderRight = () => {
   );
 };
 
-const IconHeaderLeft = (props) => {
-  console.log(props);
+const IconHeaderLeft = ({header}) => {
+  // console.log("mainHeader",header);
+  const {id}= header.params
+  const dispatch = useDispatch()
+  const {token} = useSelector(state => state.auth)
+  const profileFriend = useSelector(state => state.user.profileFriend)
+  // console.log('mainlagi',profileFriend);
+  const { name,picture,phone }= profileFriend
+  React.useEffect(()=>{
+    dispatch(getUserAction.profileFriend(token,id))
+  },[])
+
+  React.useEffect(()=>{
+    // console.log(profileFriend);
+  },[profileFriend])
+
   return (
     <>
       <View
@@ -134,14 +150,12 @@ const IconHeaderLeft = (props) => {
         <View>
           <Image
             style={{width: 35, height: 35, borderRadius: 35 / 2}}
-            source={{
-              uri: 'https://image.flaticon.com/icons/png/512/147/147134.png',
-            }}
+            source={picture ? {uri: API_URL+picture} : profile}
           />
         </View>
         <View style={{marginLeft: 10}}>
           <Text style={{fontSize: 18, fontWeight: 'bold', color: '#ffffff'}}>
-            Ko Hansen
+          {name === null ? phone : name}
           </Text>
         </View>
       </TouchableOpacity>
@@ -175,23 +189,13 @@ const IconHeaderRightRoom = () => {
   );
 };
 
-const ChatRoomStack = () => {
-  return (
-    <Stack.Navigator>
-      <Stack.Screen
-        options={({route}) => ({
-          headerBackImage: () => <IconHeaderLeft />,
-          headerTitle: '',
-          headerRight: () => <IconHeaderRightRoom />,
-          headerTintColor: '#ffffff',
-          headerStyle: {backgroundColor: '#2f2f2f', elevation: 0},
-        })}
-        name="ChatRoom"
-        component={ChatRoom}
-      />
-    </Stack.Navigator>
-  );
-};
+// const ChatRoomStack = () => {
+//   return (
+//     <Stack.Navigator>
+      
+//     </Stack.Navigator>
+//   );
+// };
 const settingStack = () => {
   return (
     <Stack.Navigator>
@@ -232,11 +236,17 @@ class Router extends Component {
               name="TopTab"
               component={TopTabApp}
             />
-            <Stack.Screen
-              options={{headerShown: false}}
-              name="ChatRoom"
-              component={ChatRoomStack}
-            />
+              <Stack.Screen
+        options={({route}) => ({
+          headerBackImage: () => <IconHeaderLeft header={route} />,
+          headerTitle: '',
+          headerRight: () => <IconHeaderRightRoom />,
+          headerTintColor: '#ffffff',
+          headerStyle: {backgroundColor: '#2f2f2f', elevation: 0},
+        })}
+        name="ChatRoom"
+        component={ChatRoom}
+      />
             <Stack.Screen
               options={{headerShown: false}}
               name="Setting"

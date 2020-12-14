@@ -1,4 +1,4 @@
-import React, {Component} from 'react';
+import React, {Component, useEffect , useState} from 'react';
 import {
   FlatList,
   Image,
@@ -13,89 +13,48 @@ import {Button} from 'native-base';
 import {useNavigation} from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import background from '../assets/background.jpg';
-import {connect} from 'react-redux';
-import userGetAction from '../redux/actions/user';
+// import {connect} from 'react-redux';
+// import userGetAction from '../redux/actions/user';
 import profile from '../assets/profile3.jpg';
 import moment from 'moment';
 import {API_URL} from '@env';
+import { useSelector, useDispatch } from 'react-redux'
+import userGetAction  from '../redux/actions/user'
+import RenderItem from '../components/MessageList'
 
-const RenderItem = ({chatlist}) => {
-  // console.log("checkin",chatlist.SenderDetails);
-  
-  const {createdAt, messages} = chatlist;
-  const {id, phone, name, picture} = chatlist.SenderDetails;
-  console.log(id);
-  // console.log(
-  //   'cek',
-  //   data.map(() => data),
-  // );
-  // console.log(API_URL+picture);
-  let time = moment(createdAt).format('h:mm A');
+const ChatListScreen = ({navigation}) => {
+  const dispatch = useDispatch()
+  const {token} = useSelector(state => state.auth)
+  const chatList = useSelector(state => state.user.chatList) 
+  console.log(chatList);
 
-  const moveChatRoom = () => {
-    props.navigation.navigate('ChatRoom', {id:id});
-    console.log('ceke', {id});
-  };
+  useEffect(() => {
+    dispatch(userGetAction.chatlist(token))
+  }, [])
   
+  useEffect(() => {
+    // console.log(chatList);
+  }, [chatList])
+
   return (
-    <View>
-      <TouchableOpacity onPress={() => moveChatRoom()}>
-        <View style={style.wrapperChats}>
-          <Image
-            style={style.img}
-            source={picture ? {uri: API_URL + picture} : profile}
-          />
-          <View style={style.flatlist}>
-            <View style={style.topContent}>
-              <Text style={style.name}>{name !== null ? name : phone}</Text>
-              <Text style={style.time}>{time}</Text>
-            </View>
-            <View>
-              <Text style={style.message}>{messages}</Text>
-            </View>
-          </View>
-        </View>
-      </TouchableOpacity>
-    </View>
-  );
-};
-class ChatListScreen extends Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      token: this.props.auth.token,
-    };
-  }
-  componentDidMount() {
-    this.props.getChatList(this.state.token);
-    setTimeout(() => {
-      StatusBar.setBackgroundColor('#2f2f2f');
-    }, 100);
-  }
-  render() {
-    const {data} = this.props.user;
-    console.log('ceke Props', data);
-    return (
       <ImageBackground source={background} style={style.background}>
+        
+
         <FlatList
-          data={data}
-          renderItem={({item}) => <RenderItem chatlist={item} />}
+          data={chatList}
+          renderItem={({item}) => 
+            <RenderItem item={item} navigation={navigation} />
+          }
         />
+        
         <Button rounded style={style.btn}>
           <Icon name="chat" size={35} color="white" />
         </Button>
       </ImageBackground>
     );
-  }
 }
-const mapStateToProps = (state) => ({
-  auth: state.auth,
-  user: state.user,
-});
-const mapDispatchToProps = {
-  getChatList: userGetAction.chatlist,
-};
-export default connect(mapStateToProps, mapDispatchToProps)(ChatListScreen);
+
+export default ChatListScreen
 
 const style = StyleSheet.create({
   parent: {
