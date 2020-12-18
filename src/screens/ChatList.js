@@ -1,4 +1,4 @@
-import React, {Component, useEffect , useState} from 'react';
+import React, {Component, useEffect, useState} from 'react';
 import {
   FlatList,
   Image,
@@ -18,60 +18,86 @@ import background from '../assets/background.jpg';
 import profile from '../assets/profile3.jpg';
 import moment from 'moment';
 import {API_URL} from '@env';
-import { useSelector, useDispatch } from 'react-redux'
-import userGetAction  from '../redux/actions/user'
-import RenderItem from '../components/MessageList'
+import {useSelector, useDispatch} from 'react-redux';
+import userGetAction from '../redux/actions/user';
+import RenderItem from '../components/MessageList';
+// import io from 'socket.io-client';
+import socket from '../helpers/socket';
+import socketIOClient from 'socket.io-client';
+
+import jwt_decode from 'jwt-decode';
 
 const ChatListScreen = ({navigation}) => {
-  const dispatch = useDispatch()
-  const {token} = useSelector(state => state.auth)
-  const chatList = useSelector(state => state.user.chatList) 
-   const pageInfo = useSelector(state => state.user.chatListPageInfo)
-   const [isLoading, setIsLoading] = useState(false);
-  console.log("pagination",pageInfo);
+  const dispatch = useDispatch();
+  const {token} = useSelector((state) => state.auth);
+  const chatList = useSelector((state) => state.user.chatList);
+  const pageInfo = useSelector((state) => state.user.chatListPageInfo);
+  const user = useSelector((state) => state.user.profile);
+  const myId = user.id;
+  const {id} = jwt_decode(token);
+  console.log('token', id);
+  const [isLoading, setIsLoading] = useState(false);
+  // console.log('pagination', pageInfo);
+  const [response, setResponse] = useState('');
+
+  const getChatList = () => {
+    dispatch(userGetAction.profile(token));
+    dispatch(userGetAction.chatlist(token));
+  };
 
   useEffect(() => {
-    dispatch(userGetAction.chatlist(token))
-    dispatch(userGetAction.profile(token));
-  }, [])
-  
-  useEffect(() => {
-    
-    // console.log(chatList);
-  }, [chatList])
-  
-  const refresh =()=> {
-    
-    
+    getChatList();
+    socket.on(id.toString(), () => {
+      console.log(socket.myId);
+      console.log('running socket');
+      getChatList();
+    });
+    return () => {
+      socket.close();
+    };
+  }, []);
+
+  // useEffect(() => {
+  //   // console.log(chatList);
+
+  // }, [chatList]);
+
+  const refresh = () => {
     setIsLoading(true);
     dispatch(userGetAction.chatlist(token));
     setIsLoading(false);
-  }
-  const nextPage = () =>{
+  };
+  const nextPage = () => {
     if (pageInfo.pages > pageInfo.currentPage) {
-      dispatch(userGetAction.chatlist(token,pageInfo.currentPage + 1))
+      dispatch(userGetAction.chatlist(token, pageInfo.currentPage + 1));
     }
-  }
+  };
   return (
-      <ImageBackground source={background} style={style.background}>
-        <FlatList
-          data={chatList}
-          onRefresh={refresh}
-          refreshing={isLoading}
-          onEndReached={nextPage}
-          onEndReachedThreshold={0.5}
-          renderItem={({item}) => 
-            <RenderItem item={item} navigation={navigation} />
-          }
-        />
-        <Button rounded style={style.btn}>
-          <Icon name="chat" size={35} color="white" />
-        </Button>
-      </ImageBackground>
-    );
-}
+    <ImageBackground source={background} style={style.background}>
+      <FlatList
+        data={chatList}
+        onRefresh={refresh}
+        refreshing={false}
+        onEndReached={nextPage}
+        onEndReachedThreshold={0.5}
+        renderItem={({item}) => (
+          <RenderItem item={item} navigation={navigation} />
+        )}
+        keyExtractor={(item) =>
+          item.id.toString().concat(item.SenderDetails.name)
+        }
+      />
+      <Button
+        rounded
+        style={style.btn}
+        onPress={() => navigation.navigate('Contact')}>
+        <Icon name="chat" size={35} color="white" />
+      </Button>
+    </ImageBackground>
+  );
+};
 
-export default ChatListScreen
+export default ChatListScreen;
 
 const style = StyleSheet.create({
   parent: {

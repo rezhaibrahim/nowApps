@@ -1,15 +1,23 @@
-import React, {Component} from 'react';
+/* eslint-disable react-native/no-inline-styles */
+import React, {Component, useState} from 'react';
 import {NavigationContainer} from '@react-navigation/native';
 import {createStackNavigator} from '@react-navigation/stack';
-import {TouchableOpacity, Image, View, Text} from 'react-native';
+import {
+  TouchableOpacity,
+  Image,
+  View,
+  Text,
+  Modal,
+  StyleSheet,
+} from 'react-native';
 import {createMaterialTopTabNavigator} from '@react-navigation/material-top-tabs';
 import Icon from 'react-native-vector-icons/FontAwesome5';
 import {useNavigation} from '@react-navigation/native';
-import {useDispatch,useSelector} from 'react-redux'
+import {useDispatch, useSelector} from 'react-redux';
 import {connect} from 'react-redux';
-import getUserAction from '../redux/actions/user'
+import getUserAction from '../redux/actions/user';
 import {API_URL} from '@env';
-import profile from '../assets/profile.png'
+import profile from '../assets/profile.png';
 import {
   Splash,
   Login,
@@ -20,6 +28,8 @@ import {
   ChatRoom,
   Setting,
   WelcomeAuth,
+  Contact,
+  MyProfile,
 } from '../screens';
 
 const Stack = createStackNavigator();
@@ -100,9 +110,94 @@ const TopTabApp = () => {
 
 const IconHeaderRight = () => {
   const navigation = useNavigation();
+  const [btn, setBtn] = useState(false);
+  const [modalVisible, setModalVisible] = useState(false);
+  //  console.log("btnicon",btn);
+  const toSetting = () => {
+    navigation.navigate('Setting');
+    setModalVisible(false);
+  };
   return (
-    <View style={{flexDirection: 'row'}}>
-      <TouchableOpacity style={{padding: 20}}>
+    <>
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={modalVisible}
+        >
+        <View style={styleHeader.parent}>
+          <View>
+            <View style={styleHeader.base}>
+              <TouchableOpacity onPress={() => setModalVisible(false)}>
+                <Text style={styleHeader.txt}>Grup baru</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+          <View>
+            <View style={styleHeader.base}>
+              <TouchableOpacity onPress={() => setModalVisible(false)}>
+                <Text style={styleHeader.txt}>Siaran baru</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+          <View>
+            <View style={styleHeader.base}>
+              <TouchableOpacity onPress={() => setModalVisible(false)}>
+                <Text style={styleHeader.txt}>WhatsApp Web</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+          <View>
+            <View style={styleHeader.base}>
+              <TouchableOpacity onPress={() => setModalVisible(false)}>
+                <Text style={styleHeader.txt}>Pesan berbintang</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+          <View>
+            <View style={styleHeader.base}>
+              <TouchableOpacity onPress={() => toSetting()}>
+                <Text style={styleHeader.txt}>Setelan</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
+      <View style={{flexDirection: 'row'}}>
+        <TouchableOpacity style={{padding: 20}} onPress={() => setBtn(true)}>
+          <Icon name="search" size={20} color="#ffffff" />
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={{padding: 20}}
+          onPress={() => setModalVisible(true)}>
+          <Icon name="ellipsis-v" size={20} color="#ffffff" />
+        </TouchableOpacity>
+      </View>
+    </>
+  );
+};
+const styleHeader = StyleSheet.create({
+  parent: {backgroundColor: 'white', width: 220, marginLeft: 137},
+  base: {margin: 10},
+  txt: {
+    margin: 5,
+    fontSize: 15,
+  },
+});
+const Title = () => {
+  return (
+    <View>
+      <Text style={{color: 'white'}}>Pilih Kontak</Text>
+    </View>
+  );
+};
+const IconHeaderRightAddContact = () => {
+  const navigation = useNavigation();
+  const [btn, setBtn] = useState(false);
+  console.log('btnicon', btn);
+  return (
+    // eslint-disable-next-line no-undef
+    <View onPress={() => setModalVisible(false)} style={{flexDirection: 'row'}}>
+      <TouchableOpacity style={{padding: 20}} onPress={() => setBtn(true)}>
         <Icon name="search" size={20} color="#ffffff" />
       </TouchableOpacity>
       <TouchableOpacity
@@ -115,30 +210,34 @@ const IconHeaderRight = () => {
 };
 
 const IconHeaderLeft = ({header}) => {
-  console.log("mainHeader",header);
-  const {userId}= header.params
-  const dispatch = useDispatch()
-  const {token} = useSelector(state => state.auth)
-  const profileFriend = useSelector(state => state.user.profileFriend)
+  // console.log("mainHeader",header);
+  const navigation = useNavigation();
+  const {userId} = header.params;
+  const dispatch = useDispatch();
+  const {token} = useSelector((state) => state.auth);
+  const profileFriend = useSelector((state) => state.user.profileFriend);
   // console.log('mainlagi',profileFriend);
-  const { name,picture,phone }= profileFriend
-  React.useEffect(()=>{
-    dispatch(getUserAction.profileFriend(token,userId))
-  },[])
+  const {name, picture, phone} = profileFriend;
+  React.useEffect(() => {
+    dispatch(getUserAction.profileFriend(token, userId));
+  }, []);
 
-  React.useEffect(()=>{
+  React.useEffect(() => {
     // console.log(profileFriend);
-  },[profileFriend])
+  }, [profileFriend]);
 
   return (
     <>
       <View
+        // eslint-disable-next-line react-native/no-inline-styles
         style={{
           flexDirection: 'row',
           justifyContent: 'flex-start',
           alignItems: 'center',
         }}>
-        <Icon name="arrow-left" size={25} color="#ffffff" />
+        <TouchableOpacity onPress={() => navigation.navigate('ChatList')}>
+          <Icon name="arrow-left" size={25} color="#ffffff" />
+        </TouchableOpacity>
       </View>
       <TouchableOpacity
         style={{
@@ -150,12 +249,12 @@ const IconHeaderLeft = ({header}) => {
         <View>
           <Image
             style={{width: 35, height: 35, borderRadius: 35 / 2}}
-            source={picture ? {uri: API_URL+picture} : profile}
+            source={picture ? {uri: API_URL + picture} : profile}
           />
         </View>
         <View style={{marginLeft: 10}}>
           <Text style={{fontSize: 18, fontWeight: 'bold', color: '#ffffff'}}>
-          {name === null ? phone : name}
+            {name === null ? phone : name}
           </Text>
         </View>
       </TouchableOpacity>
@@ -192,7 +291,7 @@ const IconHeaderRightRoom = () => {
 // const ChatRoomStack = () => {
 //   return (
 //     <Stack.Navigator>
-      
+
 //     </Stack.Navigator>
 //   );
 // };
@@ -236,21 +335,39 @@ class Router extends Component {
               name="TopTab"
               component={TopTabApp}
             />
-              <Stack.Screen
-        options={({route}) => ({
-          headerBackImage: () => <IconHeaderLeft header={route} />,
-          headerTitle: '',
-          headerRight: () => <IconHeaderRightRoom />,
-          headerTintColor: '#ffffff',
-          headerStyle: {backgroundColor: '#2f2f2f', elevation: 0},
-        })}
-        name="ChatRoom"
-        component={ChatRoom}
-      />
+            <Stack.Screen
+              options={({route}) => ({
+                headerBackImage: () => <IconHeaderLeft header={route} />,
+                headerTitle: '',
+                headerRight: () => <IconHeaderRightRoom />,
+                headerTintColor: '#ffffff',
+                headerStyle: {backgroundColor: '#2f2f2f', elevation: 0},
+              })}
+              name="ChatRoom"
+              component={ChatRoom}
+            />
+            <Stack.Screen
+              options={() => ({
+                headerTitle: '',
+                headerTintColor: '#ffffff',
+                headerStyle: {backgroundColor: '#2f2f2f', elevation: 0},
+              })}
+              name="Setting"
+              component={Setting}
+            />
+            <Stack.Screen
+              options={() => ({
+                headerTitle: 'Profil',
+                headerTintColor: '#ffffff',
+                headerStyle: {backgroundColor: '#2f2f2f', elevation: 0},
+              })}
+              name="MyProfile"
+              component={MyProfile}
+            />
             <Stack.Screen
               options={{headerShown: false}}
-              name="Setting"
-              component={settingStack}
+              name="Contact"
+              component={Contact}
             />
           </Stack.Navigator>
         )}

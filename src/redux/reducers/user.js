@@ -5,9 +5,12 @@ const initialState = {
   chatListPageInfo:{},
   profileFriend:{},
   profile:{},
+  resultSearch:[],
   isLoading: false,
   isError: false,
+  update:false,
   alertMsg: '',
+  sendMessage: false,
 };
 
 export default (state = initialState, action) => {
@@ -35,6 +38,37 @@ export default (state = initialState, action) => {
         chatListPageInfo: action.payload.data.pageInfo,
       };
     }
+    case 'SEARCH_USER_PENDING': {
+      return {
+        ...state,
+        isLoading: true,
+        alertMsg:'Please wait'
+      };
+    }
+    case 'SEARCH_USER_REJECTED': {
+      return {
+        ...state,
+        isLoading: false,
+        isError: true,
+        alertMsg: action.payload.message,
+      };
+    }
+    case 'SEARCH_USER_FULFILLED': {
+      return {
+        ...state,
+        isLoading: false,
+        isError: false,
+        resultSearch: action.payload.data.results,
+      };
+    }
+    case 'CLEAR': {
+      return {
+        ...state,
+        isLoading: false,
+        isError: false,
+        resultSearch: []
+      };
+    }
     case 'CHAT_ROOM_PENDING': {
       return {
         ...state,
@@ -57,6 +91,7 @@ export default (state = initialState, action) => {
         isLoading: false,
         isError: false,
         chatRoom: action.payload.data.results,
+        chatRoomPageInfo: action.payload.data.pageInfo,
       };
     }
     case 'PROFILE_FRIEND_PENDING': {
@@ -105,6 +140,86 @@ export default (state = initialState, action) => {
         isLoading: false,
         isError: false,
         profile: action.payload.data.results,
+      };
+    }
+    case 'SEND_MESSAGE_PENDING': {
+      return {
+        ...state,
+        isLoading: true,
+        isError: false,
+        alertMsg: 'Loading send Message... please wait ',
+      };
+    }
+    case 'SEND_MESSAGE_REJECTED': {
+      return {
+        ...state,
+        isLoading: false,
+        isError: true,
+        alertMsg: action.payload.message,
+      };
+    }
+    case 'SEND_MESSAGE_FULFILLED': {
+      return {
+        ...state,
+        isLoading: false,
+        isError: false,
+        sendMessage:true,
+        alertMsg: 'SUCCESS SEND MESSAGE'
+      };
+    }
+    case 'READ_CHAT_PENDING': {
+      return {
+        ...state,
+        isLoading: true,
+        isError: false,
+        alertMsg: 'Loading get chat room',
+      };
+    }
+    case 'READ_CHAT_REJECTED': {
+      return {
+        ...state,
+        isLoading: false,
+        isError: true,
+        alertMsg: action.payload.message,
+      };
+    }
+    case 'READ_CHAT_FULFILLED': {
+      return {
+        ...state,
+        isLoading: false,
+        isError: false,
+        alertMsg: 'read chat',
+      };
+    }
+    case 'REFRESH_SEND': {
+      return {
+        ...state,
+        sendMessage: false,
+      };
+    }
+    case 'UPDATE_PROFILE_PENDING': {
+      return {
+        ...state,
+        isLoading: true,
+        isError: false,
+        alertMsg: 'Loading get chat room',
+      };
+    }
+    case 'UPDATE_PROFILE_REJECTED': {
+      return {
+        ...state,
+        isLoading: false,
+        isError: true,
+        alertMsg: action.payload.message,
+      };
+    }
+    case 'UPDATE_PROFILE_FULFILLED': {
+      return {
+        ...state,
+        isLoading: false,
+        isError: false,
+        update:true,
+        alertMsg: 'update successfully',
       };
     }
     default: {
