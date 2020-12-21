@@ -7,6 +7,7 @@ import {
   Alert,
   TextInput,
   TouchableOpacity,
+  Modal,
 } from 'react-native';
 
 import Icon from 'react-native-vector-icons/FontAwesome';
@@ -29,145 +30,90 @@ const MyProfile = () => {
   const {token} = useSelector((state) => state.auth);
   const [profil,setProfil] = React.useState(null)
   const [image,setImage] = React.useState(null)
+  const [modalVisible, setModalVisible] = React.useState(false);
   const [choice, setChoice] = React.useState(false);
   const user = useSelector((state) => state.user.profile);
   // const { update } = useSelector((state) => state.user)
   const {name, info, phone, picture} = user;
   console.log(user);
-  const Event = React.useRef();
+  const EventName = React.useRef();
+  const EventInfo = React.useRef();
 
-  const schema = Yup.object().shape({
+  const schemaNama = Yup.object().shape({
     name: Yup.string()
       .required('Please insert your name')
       .matches(/^[A-Za-z ]*$/, 'Please enter valid name'),
     // info: Yup.string().required('Please insert your Info'),
   });
+  const schemaInfo = Yup.object().shape({
+    
+    info: Yup.string().required('Please insert your Info'),
+  });
 
-  // let options ={
-  //   maxWidth:300,
-  //   maxHeight:300,
-  //   mediaType:'photo',
-  //   noData:true,
-  //   storageOptions:{
-  //     skipBackup:true,
-  //   }
-  // }
-  // const pictureProfil =() =>{
-  //   ImagePicker.launchImageLibrary(options, async (response) => {
-  //         console.log(response);
-  //         if (response.didCancel) {
-            
-  //         }else if(response.fileSize > 2 * 1024 *1024){
-  //           Alert.alert('failed pick picture','Picture Over size ')
-  //         } else {
-  //           setProfil(response.uri);
-  //           await setImage({
-  //             uri: response.uri,
-  //             name: response.fileName,
-  //             type: response.type,
-  //           })
-  //         }
-  //     })
-  // }
+  
   const getData = async () => {
     await dispatch(userGetAction.profile(token));
   };
   const updateName = async (body) => {
     console.log(body);
-    Event.current.close();
+    EventName.current.close();
+    await dispatch(userGetAction.updateProfil(token, body));
+    getData()
+  }
+  const updateInfo = async (body) => {
+    console.log("body",body);
+    EventInfo.current.close();
     await dispatch(userGetAction.updateProfil(token, body));
     getData()
   }
 
-  // React.useEffect(() => {
-  //   dispatch(userGetAction.profile(token))
-  // }, [dispatch])
 
-  // React.useEffect(() => {
-  //   if(update){
-  //     dispatch(userGetAction.profile(token))
-  //     Alert.alert('Success','Update Profile')
-  //   }
-  // });
 
   const isSignOut = () => {
     dispatch(authAction.logout());
   };
 
   const isEditName = () => {
-    Event.current.open();
+    EventName.current.open();
   };
   const isEditInfo = () => {
-    Event.current.open();
+    EventInfo.current.open();
   };
 
-  // const selectImage = async () => {
-  //   const options = {
-  //     title: 'Select Image',
-  //     maxWidth: 256,
-  //     maxHeight: 256,
-  //     storageOptions: {
-  //       skipBackup: true,
-  //       path: 'picture',
-  //     },
-  //     noData: true,
-  //     mediaType: 'photo',
-  //     cameraType: 'front',
-  //   };
-
-  //   ImagePicker.showImagePicker(options, async (response) => {
-  //     console.log("response=",response);
-  //     if (response.error) {
-  //       toast('Coba lagi nanti!');
-  //     } else if (response.fileSize > 2 * 1024 *1024 ) {
-  //       toast('Ukuran file terlalu besar');
-  //     } else if (response.didCancel) {
-  //       toast('Tidak ada gambar terpilih');
-  //     } else {
-  //       const form = new FormData();
-
-  //       form.append('avatar', {
-  //         uri: response.uri,
-  //         name: response.fileName,
-  //         type: response.type,
-  //       });
-
-  //       await dispatch(userGetAction.updatePicture(token, form));
-  //       getData();
-  //     }
-  //   });
-  // };
   const options = {
     title: 'Select Avatar',
     customButtons: [{name: 'fb', title: 'Choose Photo from Facebook'}],
     storageOptions: {
       skipBackup: true,
-      path: 'images',
+      path: 'picture',
     },
   };
   
   const optionsCamera = {
-    mediaType: 'photo',
+    mediaType: 'image',
     quality: 0,
     saveToPhotos: false,
   };
   
   const imagePicker = (callback) => {
+    // console.log('callback=',callback);
     return ImagePicker.launchImageLibrary(options, (response) => {
+      console.log(response);
       callback(response);
     });
   };
   
   const imageCapture = (callback) => {
+    // console.log('callback=',callback);
     return ImagePicker.launchCamera(optionsCamera, (response) => {
       console.log(response);
       callback(response);
     });
   };
+ 
 
-
-  const _handleUploadImage = (response) => {
-    console.log(response);
+  const _handleUploadImage = async (response) => {
+    console.log("response",response);
     setChoice(false);
     // imagePicker((response) => {
     if (response.didCancel) {
@@ -178,101 +124,102 @@ const MyProfile = () => {
       // console.log('User tapped custom button: ', response.customButton);
     } else {
       const formData = new FormData();
-      formData.append('photo', {
+      console.log(formData);
+      formData.append('image', {
         uri: response.uri,
-        type: response.type,
         name: response.fileName,
+        type: response.type,
       });
-      const data = {photo: formData, token};
-      _uploadImage(data);
+
+      await dispatch(userGetAction.updatePicture(token, formData))
+      getData()
+      // const data = {picture: formData, token};
+      // _uploadImage(data);
     }
     // });
   };
 
-  const _uploadImage = (data) => {
-    setLoading(true);
-    const _callbackUploadImage = (res, err) => {
-      setLoading(false);
-      if (err) {
-        if (res) {
-          return ToastAndroid.show(res.data.message, ToastAndroid.SHORT);
-        }
-
-        return ToastAndroid.show('Connection Refused', ToastAndroid.SHORT);
-      }
-    };
+  // const _uploadImage = async (data) => {
+  //   console.log("data",data)
+  //   setLoading(true);
+  //   const _callbackUploadImage = (res, err) => {
+  //     setLoading(false);
+  //     if (err) {
+  //       if (res) {
+  //         return ToastAndroid.show(res.data.message, ToastAndroid.SHORT);
+  //       }
+  //       return ToastAndroid.show('Connection Refused', ToastAndroid.SHORT);
+  //     }
+  //   };
     
-  };
+  // };
 
   return (
     <>
+     <Modal 
+     animationType='slide'
+     transparent={true}
+     visible={modalVisible}
+     onRequestClose={()=> setModalVisible(false)}
+     >
+
+       <View style={styles.modal}>
+            <View style={styles.baseModal}>
+              <TouchableOpacity onPress={() => imageCapture(_handleUploadImage)} >
+                <Text>Open Camera</Text>
+              </TouchableOpacity>
+            </View>
+            <View>
+              <TouchableOpacity onPress={() => imagePicker(_handleUploadImage)}>
+                <Text>Open Gallery</Text>
+              </TouchableOpacity>
+            </View>
+       </View>
+
+     </Modal>
+     
       <View
-        style={{
-          flex: 1,
-          backgroundColor: 'white',
-        }}>
+        style={styles.parent}>
         <View
-          style={{
-            position: 'relative',
-            alignItems: 'center',
-            justifyContent: 'center',
-            marginTop: 30,
-          }}>
+          style={styles.baseImg}>
           <TouchableOpacity>
             <Image
-              style={{height: 150, width: 150, borderRadius: 100}}
+              style={styles.img}
               source={picture !== null ? {uri: API_URL + picture} : profile}
             />
           </TouchableOpacity>
         </View>
 
-        <View style={{position: 'absolute', marginTop: 130, marginLeft: 220}}>
+        <View style={styles.bacgroundIcon}>
           <View
-            style={{
-              backgroundColor: '#135e39',
-              justifyContent: 'center',
-              alignItems: 'center',
-              height: 50,
-              width: 50,
-              borderRadius: 50,
-            }}>
-            <TouchableOpacity onPress={() => imageCapture(_handleUploadImage)}>
+            style={styles.iconCMR}>
+            <TouchableOpacity onPress={() => setModalVisible(true)}>
               <Icon name="camera" color="white" size={25} />
             </TouchableOpacity>
           </View>
         </View>
 
-        <View style={{marginTop: 30, zIndex: 0}}>
-          <View style={{flexDirection: 'row', zIndex: 1}}>
-            <View style={{position: 'absolute', marginTop: 30, marginLeft: 25}}>
+        <View style={styles.baseList}>
+          <View style={styles.rowContent}>
+            <View style={styles.iconUser}>
               <Icon name="user" color="#135e39" size={20} />
             </View>
-            <View style={{marginRight: 15, marginTop: 20, marginLeft: 70}}>
-              <Text style={{color: 'gray', fontSize: 12}}>Name</Text>
-              <Text style={{color: '#135e39', fontSize: 20}}>
+            <View style={styles.name}>
+              <Text style={styles.txtName}>Name</Text>
+              <Text style={styles.nameUser}>
                 {name === null ? '-------' : name}
               </Text>
             </View>
             <View
-              style={{
-                position: 'absolute',
-                marginTop: 35,
-                marginLeft: 310,
-                zIndex: 2,
-              }}>
-              <TouchableOpacity onPress={() => isEditInfo()}>
+              style={styles.pencil}>
+              <TouchableOpacity onPress={() => isEditName()}>
                 <Icon name="pencil" color="gray" size={17} />
               </TouchableOpacity>
             </View>
           </View>
           <View
-            style={{
-              width: 245,
-              marginTop: 15,
-              marginLeft: 70,
-              marginBottom: 15,
-            }}>
-            <Text style={{fontSize: 12, color: 'gray'}}>
+            style={styles.desc}>
+            <Text style={styles.descTxt}>
               Ini bukan nama pengguna atau PIN Anda. Nama ini akan terlihat oleh
               kontak NowApps Anda
             </Text>
@@ -280,33 +227,23 @@ const MyProfile = () => {
         </View>
 
         <View
-          style={{
-            borderBottomColor: '#d6d6d6',
-            borderBottomWidth: 2,
-            marginLeft: 65,
-            width: 300,
-          }}
+          style={styles.hr}
         />
 
-        <View style={{marginBottom: 15}}>
-          <View style={{flexDirection: 'row'}}>
-            <View style={{position: 'absolute', marginTop: 30, marginLeft: 25}}>
+        <View style={styles.baseListInfo}>
+          <View style={styles.baseListRow}>
+            <View style={styles.iconInfo}>
               <Icon name="info-circle" color="#135e39" size={20} />
             </View>
-            <View style={{marginRight: 15, marginTop: 20, marginLeft: 70}}>
-              <Text style={{color: 'gray', fontSize: 12}}>Info</Text>
-              <Text style={{color: '#135e39', fontSize: 20}}>
+            <View style={styles.info}>
+              <Text style={styles.txtInfo}>Info</Text>
+              <Text style={styles.valuesInfo}>
                 {info === null ? '-----' : info}
               </Text>
             </View>
             <View
-              style={{
-                position: 'absolute',
-                marginTop: 35,
-                marginLeft: 310,
-                zIndex: 2,
-              }}>
-              <TouchableOpacity onPress={() => isEditIcon()}>
+              style={styles.pencilInfo}>
+               <TouchableOpacity onPress={() => isEditInfo()}>
                 <Icon name="pencil" color="gray" size={17} />
               </TouchableOpacity>
             </View>
@@ -314,33 +251,28 @@ const MyProfile = () => {
         </View>
 
         <View
-          style={{
-            borderBottomColor: '#d6d6d6',
-            borderBottomWidth: 2,
-            marginLeft: 65,
-            width: 300,
-          }}
+          style={styles.hr}
         />
 
-        <View style={{marginTop: 0}}>
-          <View style={{flexDirection: 'row'}}>
-            <View style={{position: 'absolute', marginTop: 30, marginLeft: 25}}>
+        <View >
+          <View style={styles.baseListRow}>
+            <View style={styles.iconPhone}>
               <Icon name="phone" color="#135e39" size={20} />
             </View>
-            <View style={{marginRight: 15, marginTop: 20, marginLeft: 70}}>
-              <Text style={{color: 'gray', fontSize: 12}}>Telpon</Text>
-              <Text style={{color: '#135e39', fontSize: 20}}>+62 {phone} </Text>
+            <View style={styles.phoneTitle}>
+              <Text style={styles.phoneTxt}>Telpon</Text>
+              <Text style={styles.valuesPhone}>+62 {phone} </Text>
             </View>
           </View>
         </View>
-        <View style={{marginTop: 0}}>
-          <View style={{flexDirection: 'row'}}>
-            <View style={{position: 'absolute', marginTop: 30, marginLeft: 25}}>
+        <View >
+          <View style={styles.baseListRow}>
+            <View style={styles.iconSignout}>
               <Icon name="sign-out" color="red" size={20} />
             </View>
             <TouchableOpacity onPress={() => isSignOut()}>
-              <View style={{marginRight: 15, marginTop: 25, marginLeft: 70}}>
-                <Text style={{color: 'red', fontSize: 20}}>Sign Out</Text>
+              <View style={styles.baseTxt}>
+                <Text style={styles.txt}>Sign Out</Text>
               </View>
             </TouchableOpacity>
           </View>
@@ -348,7 +280,7 @@ const MyProfile = () => {
       </View>
 
       <BottomSheet
-        ref={Event}
+        ref={EventName}
         closeOnDragDown={true}
         closeOnPressMask
         customStyles={{
@@ -366,23 +298,19 @@ const MyProfile = () => {
         }}
         height={150}>
         <Formik 
-        validationSchema={schema} 
+        validationSchema={schemaNama} 
         initialValues={{name: name}} 
         onSubmit={(values) => updateName(values)} 
         >
           {({handleBlur, handleChange, handleSubmit, values}) => (
             <View>
-              <Text style={{marginLeft: 40, color: '#135e39', fontSize: 16}}>
-                Masukkan Info Anda
+              <Text style={styles.baseBtm}>
+                Masukkan nama Anda
               </Text>
 
-              <View style={{marginLeft: 40, flexDirection: 'row'}}>
+              <View style={styles.btmRow}>
                 <TextInput
-                  style={{
-                    borderBottomColor: '#135e39',
-                    borderBottomWidth: 2,
-                    width: 250,
-                  }}
+                  style={styles.input}
                   onChangeText={handleChange('name')}
                   onBlur={handleBlur('name')}
                   onSubmitEditing={handleSubmit}
@@ -391,40 +319,95 @@ const MyProfile = () => {
                   value={values.name}
                 />
                 <Text
-                  style={{
-                    position: 'absolute',
-                    marginLeft: 230,
-                    marginTop: 25,
-                  }}>
+                  style={styles.btmAcc}>
                   20
                 </Text>
                 <Icon2
                   name="laugh"
                   size={20}
-                  style={{position: 'absolute', marginLeft: 270, marginTop: 25}}
+                  style={styles.emoji}
                 />
               </View>
-              <View style={{flexDirection: 'row-reverse'}}>
-                <TouchableOpacity onPress={() => Event.current.close()}>
+              <View style={styles.baseReverse}>
+                <TouchableOpacity onPress={() => EventName.current.close()}>
                   <Text
-                    style={{
-                      color: '#135e39',
-                      marginTop: 20,
-                      marginRight: 40,
-                      fontSize: 16,
-                    }}>
+                    style={styles.btn}>
                     Batal
                   </Text>
                 </TouchableOpacity>
 
                 <TouchableOpacity onPress={handleSubmit}>
                   <Text
-                    style={{
-                      color: '#135e39',
-                      marginTop: 20,
-                      marginRight: 40,
-                      fontSize: 16,
-                    }}>
+                    style={styles.btn}>
+                    Simpan
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          )}
+        </Formik>
+      </BottomSheet>
+
+      <BottomSheet
+        ref={EventInfo}
+        closeOnDragDown={true}
+        closeOnPressMask
+        customStyles={{
+          wrapper: {
+            backgroundColor: 'rgba(52, 52, 52, 0.8)',
+          },
+          draggableIcon: {
+            backgroundColor: 'gray',
+          },
+          container: {
+            borderTopRightRadius: 10,
+            borderTopLeftRadius: 10,
+            elevation: 2,
+          },
+        }}
+        height={150}>
+        <Formik 
+        validationSchema={schemaInfo} 
+        initialValues={{info: info}} 
+        onSubmit={(values) => updateInfo(values)} 
+        >
+          {({handleBlur, handleChange, handleSubmit, values}) => (
+            <View>
+              <Text style={styles.baseBtm}>
+                Masukkan Info Anda
+              </Text>
+
+              <View style={styles.btmRow}>
+                <TextInput
+                  style={styles.input}
+                  onChangeText={handleChange('info')}
+                  onBlur={handleBlur('info')}
+                  onSubmitEditing={handleSubmit}
+                  autoFocus={true}
+                  selectTextOnFocus={true}
+                  value={values.info}
+                />
+                <Text
+                  style={styles.btmAcc}>
+                  20
+                </Text>
+                <Icon2
+                  name="laugh"
+                  size={20}
+                  style={styles.emoji}
+                />
+              </View>
+              <View style={styles.baseReverse}>
+                <TouchableOpacity onPress={() => EventInfo.current.close()}>
+                  <Text
+                    style={styles.btn}>
+                    Batal
+                  </Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity onPress={handleSubmit}>
+                  <Text
+                    style={styles.btn}>
                     Simpan
                   </Text>
                 </TouchableOpacity>
@@ -436,5 +419,140 @@ const MyProfile = () => {
     </>
   );
 };
+
+const styles = StyleSheet.create({
+  parent:{
+    flex: 1,
+    backgroundColor: 'white',
+  },
+  baseImg:{
+    position: 'relative',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 30,
+  },
+  img:{
+    height: 150, 
+    width: 150, 
+    borderRadius: 100
+  },
+  iconCMR:{
+    backgroundColor: '#135e39',
+    justifyContent: 'center',
+    alignItems: 'center',
+    height: 50,
+    width: 50,
+    borderRadius: 50,
+  },
+  baseList:{
+    marginTop: 30,
+     zIndex: 0
+    },
+    rowContent:{
+      flexDirection: 'row', 
+      zIndex: 1
+    },
+    iconUser:{
+      position: 'absolute', 
+      marginTop: 30, 
+      marginLeft: 25
+    },
+    name:{
+      marginRight: 15, 
+      marginTop: 20, 
+      marginLeft: 70
+    },
+    txtName:{
+      color: 'gray', 
+      fontSize: 12
+    },
+    nameUser:{color: '#135e39', fontSize: 20},
+    pencil:{
+      position: 'absolute',
+      marginTop: 35,
+      marginLeft: 310,
+      zIndex: 2,
+    },
+    desc:{
+      width: 245,
+      marginTop: 15,
+      marginLeft: 70,
+      marginBottom: 15,
+    },
+    descTxt:{fontSize: 12, color: 'gray'},
+    hr:{
+      borderBottomColor: '#d6d6d6',
+      borderBottomWidth: 2,
+      marginLeft: 65,
+      width: 300,
+    },
+    baseListInfo:{marginBottom: 15},
+    baseListRow:{flexDirection: 'row'},
+    iconInfo:{position: 'absolute', marginTop: 30, marginLeft: 25},
+    info:{marginRight: 15, marginTop: 20, marginLeft: 70},
+    txtInfo:{color: 'gray', fontSize: 12},
+    valuesInfo:{color: '#135e39', fontSize: 20},
+    pencilInfo:{
+      position: 'absolute',
+      marginTop: 35,
+      marginLeft: 310,
+      zIndex: 2,
+    },
+    iconPhone:{position: 'absolute', marginTop: 30, marginLeft: 25},
+    phoneTitle:{marginRight: 15, marginTop: 20, marginLeft: 70},
+    phoneTxt:{color: 'gray', fontSize: 12},
+    valuesPhone:{color: '#135e39', fontSize: 20},
+    iconSignout:{position: 'absolute', marginTop: 30, marginLeft: 25},
+    baseTxt:{marginRight: 15, marginTop: 25, marginLeft: 70},
+    txt:{color: 'red', fontSize: 20},
+    baseBtm:{marginLeft: 40, color: '#135e39', fontSize: 16},
+    btmRow:{marginLeft: 40, flexDirection: 'row'},
+    input:{
+      borderBottomColor: '#135e39',
+      borderBottomWidth: 2,
+      width: 250,
+    },
+    btmAcc:{
+      position: 'absolute',
+      marginLeft: 230,
+      marginTop: 25,
+    },
+    emoji:{position: 'absolute', marginLeft: 270, marginTop: 25},
+    baseReverse:{flexDirection: 'row-reverse'},
+    btn:{
+      color: '#135e39',
+      marginTop: 20,
+      marginRight: 40,
+      fontSize: 16,
+    },
+    modal:{
+      alignItems:'center',
+      justifyContent:'center',
+      backgroundColor: 'white', 
+      width: 150,
+      height:100,
+      marginLeft:100,
+      marginTop:220,
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 1 },
+      shadowOpacity: 0.8,
+      shadowRadius: 2,  
+      elevation: 5
+    },
+    
+    baseModal:{
+      borderBottomColor: '#135e39',
+      borderBottomWidth: 3,
+    },
+    bacgroundIcon:{position: 'absolute', marginTop: 130, marginLeft: 220},
+
+
+
+
+
+
+
+
+})
 
 export default MyProfile;
